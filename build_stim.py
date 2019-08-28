@@ -40,8 +40,10 @@ def unify_arrays(ts,amps,data,fs=25000,pw=150):
     """
     ##be certian that our timestamps (and thus data) is ordered chronologically
     assert np.all(np.diff(np.argsort(ts))==1)
-    ##a container to hold individual data arrays
+    ##containers to hold things we care about data arrays
     arrs = []
+    gaps = [] ##time between stim onsets
+    n_pulses = [] ##number of pulses per epoch
     ##start by adding the inter-epoch time and scaling the data. Exclude 
     ##the last array, because it won't have a inter-epoch time
     for i in range(len(ts)-1):
@@ -54,6 +56,9 @@ def unify_arrays(ts,amps,data,fs=25000,pw=150):
         scaled = parse_stim.scale_stim(amps[i],z,pw,fs=fs)
         ##insert the scaled stim data array at the beginning of the epoch array
         epoch[0:scaled.size] = scaled
+        ##let's also figure out what the time gap to the next epoch was
+        gaps.append(epoch[scaled.size:].size/fs) ##in secs
+        n_pulses.append(start.size) ##number of pulses in this epoch
         ##now we can add this to our complete pile
         arrs.append(epoch)
     ##now add in the last stim epoch
@@ -63,4 +68,4 @@ def unify_arrays(ts,amps,data,fs=25000,pw=150):
     scaled = parse_stim.scale_stim(amps[-1],data[-1],pw,fs=fs)
     arrs.append(scaled)
     ##just return everything concatenated together now
-    return np.concatenate(arrs)
+    return np.concatenate(arrs),gaps,n_pulses

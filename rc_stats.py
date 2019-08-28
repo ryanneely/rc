@@ -22,4 +22,8 @@ def get_stats(f,pw=150,fs=25000):
     TODO: if I really wanted to, I could extract fs and then also pw from 
         the tdms_object properties
     """
-    
+    files = load_rc.parse_files(f) ##creates a =dictionary
+    ts,amps,data = load_rc.order_stim_arrays(files)
+    train,gaps,pulses = build_stim.unify_arrays(ts,amps,data,fs=fs,pw=pw)
+    return train,amps,gaps,pulses
+
