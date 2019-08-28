@@ -5,6 +5,7 @@
 ##by Ryan Neely 8/27/19
 
 import numpy as np
+import re
 
 def us_to_samples(us,fs):
     """
@@ -49,3 +50,49 @@ def search_stim(tdms_file):
             tdms_file.object(group,'Dev3/ai7')
             channel = 'Dev3/ai7'
     return group,channel
+
+def standardize_amps(val):
+    """
+    Takes in a stim amplitude value (str) and returns
+    that value scaled to mA
+    Args:
+        -val (str): stim amp; ie '100uA'
+    Returns:
+        -stimval (float): float value of stimval scaled to mA
+    """
+    ##look for an indication that it's already in mA
+    if re.search("ma",val,re.IGNORECASE) == None:
+        ##if it's not in microamps, we aren't equipped to handle it
+        if re.search("ua",val,re.IGNORECASE) == None:
+            raise ValueError("Unrecognized units")
+        else:
+            stimval = float(val[0:3])
+            stimval = stimval/1000.0
+    ##in this case the stimval is already in mA, so just return the float
+    else:
+        stimval = float((val)[0:3])
+    return stimval
+
+def datetime_gaps_to_samples(dt1,dt2,fs):
+    """
+    A function that takes at the difference between two datetime.datetime objects
+    and converts it to a number of samples given a known sample rate
+    Args:
+        -dt1: datetime.datetime number 1
+        -dt2: datetime.datetime number 2
+        -fs: sample rate, in Hz
+    Returns: 
+        n_samp: number of samples elapsed between the dt1 and dt2
+    """
+    ##check to see if dt1 occurred before dt2
+    if min(dt1,dt2) == dt1:
+        diff = dt2-dt1
+    else:
+        diff = dt1-dt2
+    ##convert the difference to seconds
+    diff = diff.total_seconds()
+    ##now just multiply this by fs to get total samples elapsed
+    return int(np.round(diff*fs))
+
+    
+    

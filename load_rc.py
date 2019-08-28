@@ -8,6 +8,7 @@ import os
 import numpy as np
 import nptdms
 import re
+import utils
 
 def parse_files(folder_path):
     """
@@ -45,6 +46,38 @@ def parse_files(folder_path):
         result[stimval] = os.path.join(folder_path,f)
     return result
 
+def order_stim_arrays(file_dict):
+    """
+    Takes in a list of stimulation files, and returns ordered lists of stim
+    monitor data arrays, except they are now ordered according to which one happened first
+    (according to the datetime stamp). 
+    Args:
+        -files_dict: dictionary of stim amplitude:file path pairs
+    Returns:
+        -timestamps: list of datetime.datetime timestamps
+        -amps: list of stim amplitudes, in mA
+        -stim_data: list of raw stim data arrays
+    """
+    ##first thing to do is to split out the pieces we need into separate lists
+    stim_amps = list(file_dict.keys())
+    files = list(file_dict.values())
+    ##convert the amps to float values in mA
+    stim_amps = [utils.standardize_amps(x) for x in stim_amps]
+    ##now we want to laod the data, and get the timestamps
+    timestamps = []
+    stim_data = []
+    for f in files:
+        tdms_file = nptdms.TdmsFile(f)
+        ##now find the address of the stim array data
+        group,channel = utils.search_stim(tdms_file)
+        data = tdms_file.object(group,channel)
+        ##grab the timestamp in datetime.datetime format
+        timestamps.append(get_tstart(data))
+        ##now extract the sim data
+        stim_data.append(data.data)
+    ##now order things according to the datetime stamp
+    idx = list(np.argsort(timestamps))
+    return [timestamps[i] for i in idx],[stim_amps[i] for i in idx],[stim_data[i] for i in idx]
 
 
 def get_tstart(tdms_object):
