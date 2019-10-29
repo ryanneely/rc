@@ -22,7 +22,7 @@ cathodal_RC_only_dsets = [
 ##stimulation at 30Hz, 40 mins, 10mins post LPS, calibrated to 200% max response, 150us pulse width, anodal
 anodal_RC_200_dsets = [
     r"E:\7_1_19_RN2\rc",
-    r"E:\6_24_19_RN1\rc",
+    # r"E:\6_24_19_RN1\rc",
     r"E:\6_25_19_RN1\rc",
     r"E:\6_26_19_RN1\rc",
     r"E:\6_28_19_RN1\rc",
